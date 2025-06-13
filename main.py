@@ -13,14 +13,13 @@ import requests
 import time
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY")
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-# Load Vosk model
+
 vosk_model_path = "vosk-model"
 if not os.path.exists(vosk_model_path):
     raise Exception(f"Vosk model not found at '{vosk_model_path}'. Download from https://alphacephei.com/vosk/models")
@@ -35,7 +34,7 @@ async def read_root(request: Request):
 async def talk():
     filename = f"temp_{uuid.uuid4().hex}.wav"
 
-    # Step 1: Record audio
+ #Record audio
     duration = 5
     fs = 16000
     print("Recording...")
@@ -43,8 +42,9 @@ async def talk():
     sd.wait()
     wav.write(filename, fs, recording)
     print("Recording done.")
-
-    # Step 2: Transcribe with Vosk
+    
+# Transcribe with Vosk
+    
     rec = KaldiRecognizer(model, fs)
     with open(filename, "rb") as f:
         audio_data = f.read()
@@ -59,7 +59,7 @@ async def talk():
     if not text:
         return {"error": "Could not understand your speech."}
 
-    # Step 3: Call Together AI
+    #Call Togeher AI
     try:
         start_time = time.time()
         headers = {
@@ -86,7 +86,7 @@ async def talk():
         reply = f"Error from Together AI: {str(e)}"
         latency = 0
 
-    # Step 4: Speak the reply
+    # Speak the reply
     engine = pyttsx3.init()
     engine.say(reply)
     engine.runAndWait()
